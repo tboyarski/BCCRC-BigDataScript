@@ -1,0 +1,80 @@
+# BigDataScript - Process generation tests
+#
+# Purpose: Conversion of fastqc.mk (GNU Make) into fastqc.bds (BigDataScript)
+# Overview: Proof of concept test case for the usage of BigDataScript (BDS). Will follow the 
+#	control flow and design flow of "modules/fastqc.mk".
+
+# Author: Tim Boyarski
+# Date: 2017-01-23
+
+# Argument options:
+#	NOGROUP_FLAG: Disable group of bases for reads >50bp. All reports will show data for
+#			every base in the read. (True/False)
+
+string LOGDIR = "log/fastqc."
+string date = "20170123"
+
+SAMPLE_FILE := "samples.txt"
+SAMPLES := "sys cat $SAMPLE_FILE"
+
+BAM_DIR := "bam"					help Directory name for the incoming BAM files ... "bam"
+UNTAR_DIR := "untar"					help Directory name for the output unzipped (tar) files ... "untar"
+TAR_DIR := "tar"					help Directory name for the output TAR.GZ files ... "tar"
+OUTPUT_DIR := "fastqc"					help Output directory for resulting fastqc.zip files ... "fastqc"
+FASTQC_OPTS := " -o " + SAMPLE_FILE.pathName()		help Argument options for when calling FASTQC; PathName? ... "-o usr/tmp/dir/"
+NOGROUP_FLAG := false					help Diable group of bases for reads >50bp. (True ~ --nogroup)
+
+# Pre-process sample.txt file to generate a list of the names of all the output files
+
+string[] directoryList = BAM_DIR.dir()
+string[] bamList
+string[] tarList
+string[] untarList
+
+# Iterate through the directory: validate and compile a list of the expected output files to be used to drive dependency.
+for (string directoryFile : directoryList) {
+    #Check input file has the proper file extention.	 *** Able to do additional pre-processing of file names ***
+    if(directoryFile.extName() == "bam") {
+	bamList.add(BAM_DIR + "/" + directoryFile)				# Create list of all starting BAM files
+	untarList.add(UNTAR_DIR + "/" + BAM_DIR + "/" +  directoryFile)		# Create list of all anticipated output unzipped files
+	#Add date tag to intermediate files
+	directoryFile = date + "_" + directoryFile				# Modify tempString for better use in output file names
+	tarList.add(TAR_DIR + "/" + directoryFile.swapExt("tar.gz"))		# Create list of all anticipated output Tar.Gz files
+    }
+}
+
+# Iterate through the bamList; Can do this becuase list sizes are all derived from bamList
+for(int i = 0; i < bamList.size(); i++){
+    #The generation of each tarList file is dependent on it's corresponding bamList file.
+    #if(bamList[i].exists()){
+	#println "---------------------"
+	#println "Bam file found!"
+	#println tarList[i]
+	#println bamList[i]
+	dep (tarList[i] <- bamList[i]) {
+	    sys tar -cvf $tarList[$i] $bamList[$i]
+	}
+    #}
+}
+
+
+# Iterate through the tarList; Can do this becuase list sizes are all relative to bamList
+for(int i = 0; i < tarList.size(); i++){
+    #The generation of each tarList file is dependent on it's corresponding bamList file.
+    #if(tarList[i].exists()){
+	#println "---------------------"
+	#println "Tar.gz file found!"
+	#println untarList[i]
+	#println tarList[i]
+	if(untarList[i].exists()) println "The Untarred File: " + untarList[i] + " exists!"
+	dep (untarList[i] <- tarList[i]) { 
+	    sys tar -xvf $tarList[$i] -C $UNTAR_DIR
+	}
+}
+goal untarList[0]
+
+wait
+# Iterate through the untarList; Touch all the exported files to update their time stamps.
+for(int i = 0; i < untarList.size(); i++){
+    sys touch $untarList[i]
+}
