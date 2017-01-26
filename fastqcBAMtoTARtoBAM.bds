@@ -71,10 +71,11 @@ for(int i = 0; i < tarList.size(); i++){
 	    sys tar -xvf $tarList[$i] -C $UNTAR_DIR
 	}
 }
-goal untarList[0]
+goal untarList
 
 wait
+
 # Iterate through the untarList; Touch all the exported files to update their time stamps.
 for(int i = 0; i < untarList.size(); i++){
-    sys touch $untarList[i]
+    sys touch $untarList[$i]
 }
