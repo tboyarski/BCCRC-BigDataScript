@@ -1,0 +1,40 @@
+# BiggDataScript - Interface
+#
+# Purpose: A CLI module to black-box the use of the varScan module.
+# Overview: Proof of concept test case for the usage of BigDataScript (BDS). Attempting to make a driver class
+#	which will be responsible for calling all iterations of varScan. This will be reliant on the main driver
+#	calling the function correctly. See post conditions.
+
+# Author: Tim Boyarski
+# Date: 2017-01-26
+
+# Pre-condition: when choosing the version, you must choose a version which EXISTS and is available.
+string varScan(string MODULE_VERSION, string SAMPLE_FILE){
+    if(MODULE_VERSION == "0") {
+	println "Don't choose the default version!"
+	return MODULE_VERSION
+    } else {
+	println "We are using file <$SAMPLE_FILE>"
+	
+	# Declare variables to be used in file parsing.
+	string[] fileLines = SAMPLE_FILE.readLines()	# Read the file, line by line, into a variable
+	string regExpression = "[ *]|[\t*]"		# File parse using regEx "[[[:space:]]*|\t*]" ~ Any whitespace character
+	string[] fileWords				# Temp array to hold the paired values; will be used to generate HashMap
+	string{} samplePairHash				# Hashmap to store the same pair
+
+	# Using each two-word line parsed from the file, generate hash map
+	for(string fileLine : fileLines){
+	    fileWords = fileLine.split(regExpression)
+	    samplePairHash{fileWords[0]} = fileWords[1]
+	}
+
+	# Output: REPORTING STATEMENT
+	#   Just a testing called to make sure the hashmap is being generated properly.
+	for(string k : samplePairHash.keys() ) { 
+	     print("Key : $k\tValue : " + samplePairHash{k} + "\n") 
+	}
+
+	println "varScan function module success"
+	return MODULE_VERSION
+    }
+}

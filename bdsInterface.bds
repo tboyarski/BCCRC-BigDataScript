@@ -1,0 +1,50 @@
+# BigDataScript - Interface
+#
+# Purpose: A CLI interface to black-box the use of modules.
+# Overview: Proof of concept test case for the usage of BigDataScript (BDS). Attempting to make an interface
+#	which will be comptabible with GNU Make modules. This may serve as a template for all modules, or it 
+#	may need to be tailored for each specific module. Ideally, it will be universial. Initially, we will 
+#	be attempting to generate the interface suc that it can run the varScan module.
+
+# Author: Tim Boyarski
+# Date: 2017-01-26
+
+
+include "bdsVarScan.bds"
+
+# Argument options:
+	MODULE_NAME:= "undefined"		    help Name of the module to be run by this interface.
+	MODULE_VERSION:= "0"			    help Version of the module named. 
+	SAMPLE_FILE:= "default.txt"		    help Name of the file which contains sample names to be read in. Sensitive to file formatting. 
+
+
+# Confirm user provided correct CLI arguments. On failure, advise user and provide example BDS call. On success
+#   log the name of the module called. Logging name of module called becuase BDS does not otherwise track this.
+if(MODULE_NAME == "undefined"){
+	println "You have not defined a module to be run. Please define a module in your command line arguement."
+	println "	Example: $ bds bdsInterface.bds -MODULE_NAME varScan"
+    } else {
+	println "You have chosen to run " + MODULE_NAME
+	sys echo MODULE_NAME=$MODULE_NAME > log.txt
+    }
+
+# Check if varScan module was called. Respond accordingly.
+if(MODULE_NAME == "varScan"){
+    # Verify the version of varScan to be used, default value is unknown and has temporarily been set to "0"
+    if(MODULE_VERSION == "0"){
+	# Default version of varScan will need to be hardcoded here. Do not set it up at the top as not varScan specific.
+	MODULE_VERSION := "fIlLiNtHeDeFaUlTvErSiOn"
+	println "You have not specified a version number. The default version, <Version $MODULE_VERSION> will be used"
+    } else {
+	println "You have specified <Version $MODULE_VERSION> to be used"
+	sys echo MODULE_VERSION=$MODULE_VERSION >> log.txt
+	if(varScan(MODULE_VERSION, SAMPLE_FILE) != "0"){
+	    println "varScan executed correctly!"
+	} else {
+	    println "ALERT: VarScan module function failed. We don't actually let you chose the default, as we don't know what it should be! So evil!"
+	}
+    }
+}
+
+
+
