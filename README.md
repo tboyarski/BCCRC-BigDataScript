@@ -1,14 +1,14 @@
-#Proof of Concept: BDS Pipelines
+# Proof of Concept: BDS Pipelines
 They require certain files to exist, depending on which phases of the pipeline you are running.
 Pipelines generated to explore the BDS language. The scripts provide exampels of file parsing,
 dependency processing, and cluster exectuion.
 
-##Directories required:##
+## Directories required:##
     bam/        Do not share; Files created here
     ref/        Sharable: Read-Only
     fastq/      Do not share; Files created here
 
-###Pipeline Stages//Phases:###
+### Pipeline Stages//Phases:###
 * Phase 0: The pipeline starts with an original BAM file, located in the BAM directory.
 * Phase 1: Reassembling the FASTQ files from the provided BAM file.
 * Phase 2: Generating a new BAM file, "_realigned.BAM", from the FASTQ files.
